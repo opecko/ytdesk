@@ -154,6 +154,8 @@ function mapCard(n: R): Item[] {
     if (JSON.stringify(n.subtitleBadges ?? []).includes("EXPLICIT")) top.explicit = true;
   }
   if (top && top.type !== "artist" && !top.kind) top.kind = subRuns[0]?.text;
+  // Songs on an artist card have no artist/album runs ("Song • 3:44 • 130M plays"); the player fills them in
+  // from /next once one plays.
   return [top, ...mapRawItems(n.contents)].filter((i): i is Item => !!i);
 }
 

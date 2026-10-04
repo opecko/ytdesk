@@ -206,7 +206,7 @@ switch (cmd) {
     const [type, id] = rest;
     const r = await step(async () => {
       const q = await startRadio(exec, { type, id } as RadioSource);
-      return { via: q.via, playlistId: q.playlistId?.slice(0, 16), tracks: q.tracks.length, first: q.tracks.slice(0, 3).map((t) => t.title), hasCont: !!q.continuation, title: q.title };
+      return { via: q.via, playlistId: q.playlistId?.slice(0, 16), tracks: q.tracks.length, first: q.tracks.slice(0, 3).map((t) => `${t.id} ${t.title} / ${t.artists.join(", ")} / ${t.album?.title ?? "-"}`), hasCont: !!q.continuation, title: q.title };
     });
     out("radio", { type, id, ...r });
     break;

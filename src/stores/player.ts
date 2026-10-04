@@ -251,11 +251,20 @@ export const usePlayer = create<PlayerState>((set, get) => {
       const activeLabel = get().chips.find((c) => c.id === get().activeChipId)?.label;
       const kept = w.chips.find((c) => c.label === activeLabel) ?? w.chips.find((c) => c.selected) ?? null;
       set({ watch: { ...w, videoId: track.id }, chips: w.chips, activeChipId: kept?.id ?? null });
-      // Tracks from typed page parsers don't know they're podcast episodes; /next does.
-      if (!track.podcast && w.tracks.some((t) => t.id === track.id && t.podcast)) {
+      // Some lists (search top-result songs, artist cards) omit the artist or album, and typed page parsers don't
+      // know about podcast episodes; /next's own entry for the track has all of it.
+      const full = w.tracks.find((t) => t.id === track.id);
+      const patch: Partial<Track> = {};
+      if (full) {
+        if (!track.artists.length && full.artists.length) patch.artists = full.artists;
+        if (!track.album && full.album) patch.album = full.album;
+        if (full.podcast && !track.podcast) patch.podcast = true;
+        if (full.explicit && !track.explicit) patch.explicit = true;
+      }
+      if (Object.keys(patch).length) {
         const q = [...get().queue];
         if (q[get().index]?.id === track.id) {
-          q[get().index] = { ...track, podcast: true };
+          q[get().index] = { ...q[get().index], ...patch };
           set({ queue: q });
         }
       }

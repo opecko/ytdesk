@@ -46,7 +46,7 @@ function NowPlaying() {
           <>
             <button onClick={openNowPlaying} className="block max-w-full truncate text-left text-sm font-medium hover:underline" title={track.title}>{track.title}</button>
             {error ? <PlaybackError error={error} /> : (
-              <p className="truncate text-sm text-[var(--text-2)]" title={track.subtitle}>{status === "loading" ? "Loading…" : track.subtitle}</p>
+              <p className="truncate text-sm text-[var(--text-2)]" title={byline(track)}>{status === "loading" ? "Loading…" : byline(track)}</p>
             )}
           </>
         ) : (
@@ -161,6 +161,11 @@ function NowPlayingToggle() {
 function PodcastSpeedSlot() {
   const podcast = usePlayer((s) => !!s.queue[s.index]?.podcast);
   return podcast ? <PodcastSpeed /> : null;
+}
+
+/** "Artist • Album" for the player, whatever list the track came from; the list's own subtitle only as a fallback. */
+export function byline(t: Track): string {
+  return [t.artists.join(", "), t.album?.title].filter(Boolean).join(" • ") || t.subtitle || "";
 }
 
 export default function PlayerBar({ queueOpen, onToggleQueue }: { queueOpen: boolean; onToggleQueue: () => void }) {

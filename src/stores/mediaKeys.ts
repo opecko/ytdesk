@@ -31,7 +31,7 @@ export async function initTray() {
   const sync = () => {
     const s = usePlayer.getState();
     const t = s.queue[s.index];
-    const title = t ? `${t.title} — ${t.artists.join(", ") || t.subtitle}` : null;
+    const title = t ? [t.title, t.artists.join(", ")].filter(Boolean).join(" — ") : null;
     const playing = s.status === "playing";
     const key = `${title}|${playing}`;
     if (key === last) return;

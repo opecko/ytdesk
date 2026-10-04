@@ -37,14 +37,15 @@ export function artUrl(track: Track): string {
 export function buildActivity(p: PresenceInput): Record<string, any> {
   const { track } = p;
   const now = p.now ?? Date.now();
-  const artist = track.artists.join(", ") || track.subtitle;
+  // Never the list subtitle: from search that's e.g. "Song • 3:58 • 247M plays". The player fills artists from /next.
+  const artist = track.artists.join(", ");
   const album = track.album?.title;
   // status_display_type = details: the member list shows the track name instead of the app name.
   const activity: Record<string, unknown> = {
     type: ACTIVITY_LISTENING,
     status_display_type: STATUS_DISPLAY_DETAILS,
     details: fit(track.title) ?? "Unknown title",
-    state: fit(p.playing ? artist : `Paused · ${artist}`) ?? (p.playing ? undefined : "Paused"),
+    state: (artist ? fit(p.playing ? artist : `Paused · ${artist}`) : undefined) ?? (p.playing ? undefined : "Paused"),
     assets: {
       large_image: artUrl(track),
       ...(album ? { large_text: fit(album) } : {}),
