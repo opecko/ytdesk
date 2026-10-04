@@ -4,6 +4,7 @@
 #   scripts/release.sh                 # deb + arch + win
 #   scripts/release.sh --only deb,win  # pick targets: deb, arch, win
 #   scripts/release.sh --skip-tests    # skip tsc/vitest/cargo test preflight
+#   scripts/release.sh --publish       # then tag, push and create the GitHub release (scripts/publish.sh)
 #
 # Shows numbered steps with elapsed time, a ✓/✗ summary with durations at the end, and logs everything to
 # release/logs/release-<time>.log.
@@ -20,11 +21,13 @@ ROOT=$PWD
 
 targets="deb,arch,win"
 run_tests=1
+publish=0
 while [ $# -gt 0 ]; do
   case $1 in
     --only) targets=$2; shift 2 ;;
     --skip-tests) run_tests=0; shift ;;
-    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
+    --publish) publish=1; shift ;;
+    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -43,6 +46,7 @@ steps_total=2 # preflight + checksums
 { want deb || want arch; } && steps_total=$((steps_total + 1))
 want arch && steps_total=$((steps_total + 1))
 want win && steps_total=$((steps_total + 1))
+[ "$publish" = 1 ] && steps_total=$((steps_total + 1))
 
 started=$(date +%s)
 step_n=0
@@ -103,6 +107,10 @@ need cargo "install Rust via rustup"
 need node "install Node (nvm)"
 need npx "comes with Node"
 need jq "sudo apt install jq"
+if [ "$publish" = 1 ]; then
+  need gh "https://cli.github.com"
+  gh auth status >/dev/null 2>&1 || die "not signed in to gh (gh auth login)"
+fi
 
 docker_cmd=""
 if want arch; then
@@ -182,3 +190,8 @@ fi
 step "Checksums"
 (cd "$out" && sha256sum -- * > SHA256SUMS)
 ls -lh "$out"
+
+if [ "$publish" = 1 ]; then
+  step "Publish GitHub release"
+  scripts/publish.sh "$ver"
+fi

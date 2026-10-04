@@ -1,18 +1,12 @@
-# Builds the Windows installer, the Debian package and the Arch ytdesk-bin package for a release and attaches them,
-# with SHA256SUMS and a changelog, to the GitHub release.
+# Backup for when you can't build locally: builds the Windows installer, the Debian package and the Arch ytdesk-bin
+# package on GitHub runners and attaches them, with SHA256SUMS and a changelog, to the release for a tag.
+# The usual path is local and costs no Actions minutes: scripts/release.sh --publish (see scripts/publish.sh).
 #
-# Start it in any of these ways:
-#   - publish a release in the GitHub UI with a new tag like v1.2.0 (your notes stay on top of the changelog)
-#   - push a tag: git tag v1.2.0 && git push origin v1.2.0 (the release is created for you)
-#   - Actions → Release → Run workflow, with an existing tag (rebuilds and replaces the files)
-# The tag must match the version in src-tauri/tauri.conf.json (bump it in every file listed in scripts/release.sh).
+# Run it from Actions → Release → Run workflow with an existing tag like v1.2.0 (tag it and push the tag first).
+# The tag must match the version in src-tauri/tauri.conf.json.
 name: Release
 
 on:
-  push:
-    tags: ["v*"]
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
@@ -20,13 +14,13 @@ on:
         required: true
 
 concurrency:
-  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+  group: release-${{ inputs.tag }}
 
 permissions:
   contents: read
 
 env:
-  TAG: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+  TAG: ${{ inputs.tag }}
 
 jobs:
   linux:
