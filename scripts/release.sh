@@ -176,6 +176,8 @@ if want arch; then
   if [ "$docker_cmd" = sg ]; then sg docker -c "packaging/arch/docker-build.sh bin"
   else packaging/arch/docker-build.sh bin; fi
   cp packaging/out/ytdesk-bin-"$ver"-*-x86_64.pkg.tar.zst "$out/"
+  git checkout -- packaging/arch/PKGBUILD packaging/arch-bin/PKGBUILD # clean tree again, e.g. for --publish
+  restore_pkgbuilds=0
 fi
 
 # ---------- windows ----------
