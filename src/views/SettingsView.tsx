@@ -7,6 +7,7 @@ import Switch from "../components/Switch";
 import { ErrorBox, Loading } from "../components/Status";
 import { useAsync } from "../hooks/useData";
 import { useSettings } from "../stores/settings";
+import { useUpdate } from "../stores/update";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -138,6 +139,42 @@ function DiscordSettings() {
   );
 }
 
+function UpdateSettings() {
+  const { updateCheck, set } = useSettings();
+  const [state, setState] = useState<{ busy: boolean; text?: string; error?: boolean }>({ busy: false });
+  const checkNow = async () => {
+    setState({ busy: true });
+    try {
+      const info = await useUpdate.getState().check();
+      if (info.newer) {
+        setState({ busy: false });
+        useUpdate.getState().setDialogOpen(true);
+      } else setState({ busy: false, text: `You're up to date (version ${info.current}).` });
+    } catch (e) {
+      setState({ busy: false, error: true, text: e instanceof Error ? e.message : String(e) });
+    }
+  };
+  return (
+    <section className="mb-6 rounded-lg bg-[var(--surface-1)] p-6">
+      <h2 className="mb-1 text-lg font-semibold">Updates</h2>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm">Check for updates on startup</p>
+          <p className="text-sm text-[var(--text-2)]">Looks for a new ytdesk release on GitHub when the app starts.</p>
+        </div>
+        <Switch on={updateCheck} onChange={(v) => set({ updateCheck: v })} label="Check for updates on startup" />
+      </div>
+      <div className="mt-4 flex items-center gap-4">
+        <button onClick={() => void checkNow()} disabled={state.busy}
+          className="flex h-9 shrink-0 items-center gap-2 rounded-full bg-[var(--hover)] px-4 text-sm font-medium hover:bg-[var(--active)] disabled:opacity-60">
+          <RefreshCw size={16} className={state.busy ? "animate-spin" : ""} aria-hidden /> Check now
+        </button>
+        {state.text && <p className={`select-text text-sm ${state.error ? "text-[var(--danger)]" : "text-[var(--text-2)]"}`}>{state.text}</p>}
+      </div>
+    </section>
+  );
+}
+
 function Advanced() {
   const [open, setOpen] = useState(false);
   return (
@@ -187,6 +224,7 @@ export default function SettingsView() {
         </div>
       </section>
       <DiscordSettings />
+      <UpdateSettings />
       <Advanced />
     </div>
   );

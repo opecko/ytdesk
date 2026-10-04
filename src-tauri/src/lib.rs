@@ -3,6 +3,7 @@ mod discord;
 mod proxy;
 mod render;
 mod tray;
+mod update;
 mod ytdlp;
 
 use std::io::Write;
@@ -27,6 +28,7 @@ fn log_playback(app: tauri::AppHandle, line: String) -> Result<String, String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             ytdlp::ensure_fresh(app.handle().clone());
@@ -71,6 +73,9 @@ pub fn run() {
             auth::auth_clear,
             auth::auth_login,
             ytdlp::ytdlp_stream_url,
+            update::update_check,
+            update::update_open_page,
+            update::update_install,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

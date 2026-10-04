@@ -12,10 +12,12 @@ interface Settings {
   podcastSpeed: number;
   /** Show podcast episodes in Discord Rich Presence. */
   discordPodcasts: boolean;
+  /** Look for a newer GitHub release on startup. */
+  updateCheck: boolean;
 }
 
 const KEY = "settings";
-const DEFAULTS: Settings = { autoplay: true, discordRpc: true, discordButton: true, saveHistory: true, podcastSpeed: 1, discordPodcasts: false };
+const DEFAULTS: Settings = { autoplay: true, discordRpc: true, discordButton: true, saveHistory: true, podcastSpeed: 1, discordPodcasts: false, updateCheck: true };
 
 function read(): Settings {
   try {
@@ -30,8 +32,8 @@ export const useSettings = create<Settings & { set: (patch: Partial<Settings>) =
   set: (patch) => {
     set(patch);
     try {
-      const { autoplay, discordRpc, discordButton, saveHistory, podcastSpeed, discordPodcasts } = get();
-      localStorage.setItem(KEY, JSON.stringify({ autoplay, discordRpc, discordButton, saveHistory, podcastSpeed, discordPodcasts }));
+      const { autoplay, discordRpc, discordButton, saveHistory, podcastSpeed, discordPodcasts, updateCheck } = get();
+      localStorage.setItem(KEY, JSON.stringify({ autoplay, discordRpc, discordButton, saveHistory, podcastSpeed, discordPodcasts, updateCheck }));
     } catch {
       /* storage unavailable */
     }

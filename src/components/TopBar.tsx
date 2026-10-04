@@ -2,6 +2,7 @@ import { ChevronLeft } from "lucide-react";
 import { useNav } from "../stores/nav";
 import SearchBox from "./SearchBox";
 import Avatar from "./Avatar";
+import { UpdateChip } from "./UpdateDialog";
 
 export default function TopBar() {
   const canBack = useNav((s) => s.history.length > 0);
@@ -12,7 +13,8 @@ export default function TopBar() {
         <ChevronLeft size={24} />
       </button>
       <SearchBox />
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-3">
+        <UpdateChip />
         <Avatar />
       </div>
     </header>

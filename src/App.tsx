@@ -12,6 +12,8 @@ import { useUi } from "./stores/ui";
 import QueuePanel from "./components/QueuePanel";
 import Toast from "./components/Toast";
 import CreditsDialog from "./components/CreditsDialog";
+import UpdateDialog from "./components/UpdateDialog";
+import { initUpdates } from "./stores/update";
 
 export default function App() {
   const [queueOpen, setQueueOpen] = useState(false);
@@ -23,6 +25,7 @@ export default function App() {
     void initTray();
     initDiscord();
     initHistory();
+    initUpdates();
   }, []);
   return (
     <div className="flex h-full flex-col">
@@ -37,6 +40,7 @@ export default function App() {
       <NowPlaying />
       <PlayerBar queueOpen={queueOpen} onToggleQueue={() => setQueueOpen((o) => !o)} />
       <CreditsDialog />
+      <UpdateDialog />
       <Toast />
     </div>
   );

@@ -75,8 +75,10 @@ interface PlayerState {
 
 const MEDIA_ERR_NETWORK = 2;
 const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
-const DECODE_HINT =
-  "WebKitGTK could not decode this stream. Install gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad and gstreamer1.0-libav.";
+// The GStreamer hint only applies to Linux (WebKitGTK); on Windows WebView2 decodes everything we request itself.
+const DECODE_HINT = /Linux/.test(navigator.userAgent)
+  ? "WebKitGTK could not decode this stream. Install gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad and gstreamer1.0-libav."
+  : "This song couldn't be played. Try again in a moment.";
 
 const audio = new Audio();
 audio.preload = "auto";

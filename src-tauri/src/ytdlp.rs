@@ -9,6 +9,19 @@ const DEFAULT_BIN: &str = "yt-dlp";
 const UPDATE_EVERY: Duration = Duration::from_secs(7 * 24 * 3600);
 const RELEASE_BASE: &str = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/";
 
+/// `Command` that never opens a console window on Windows (yt-dlp.exe is a console program).
+fn command(bin: impl AsRef<std::ffi::OsStr>) -> Command {
+    #[allow(unused_mut)]
+    let mut cmd = Command::new(bin);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+    cmd
+}
+
 fn valid_video_id(id: &str) -> bool {
     (6..=20).contains(&id.len()) && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
@@ -91,7 +104,7 @@ fn resolve_bin(app: &AppHandle) -> String {
 }
 
 fn version_of(bin: &str) -> Option<String> {
-    let out = Command::new(bin).arg("--version").output().ok()?;
+    let out = command(bin).arg("--version").output().ok()?;
     out.status.success().then(|| String::from_utf8_lossy(&out.stdout).trim().to_owned())
 }
 
@@ -192,7 +205,7 @@ pub async fn ytdlp_stream_url(app: AppHandle, video_id: String, codecs: Vec<Stri
     tauri::async_runtime::spawn_blocking(move || {
         let rt = find_js_runtime();
         let cookies = cookie.as_deref().map(TempCookies::create).transpose()?;
-        let mut cmd = Command::new(&bin);
+        let mut cmd = command(&bin);
         cmd.args(["-g", "-f", &selector, "--no-playlist", "--no-warnings", "--no-progress"]);
         cmd.args(js_runtime_args(&rt));
         if let Some(c) = &cookies {
@@ -272,7 +285,7 @@ pub async fn ytdlp_install(app: AppHandle) -> Result<String, String> {
 pub async fn ytdlp_update(app: AppHandle) -> Result<String, String> {
     let bin = managed_path(&app).filter(|p| p.exists()).ok_or("managed yt-dlp is not installed")?;
     tauri::async_runtime::spawn_blocking(move || {
-        let out = Command::new(&bin).arg("-U").output().map_err(|e| e.to_string())?;
+        let out = command(&bin).arg("-U").output().map_err(|e| e.to_string())?;
         let text = String::from_utf8_lossy(if out.status.success() { &out.stdout } else { &out.stderr }).into_owned();
         let last = text.lines().last().unwrap_or("").to_owned();
         if out.status.success() { Ok(last) } else { Err(format!("yt-dlp -U failed: {last}")) }

@@ -23,7 +23,9 @@ export async function viaProxy(stream: Stream): Promise<Stream> {
 export class UnsupportedCodecError extends Error {
   constructor() {
     super(
-      "This WebView cannot decode Opus (webm) or AAC (mp4) audio. On Linux install gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad and gstreamer1.0-libav.",
+      /Linux/.test(navigator.userAgent)
+        ? "This WebView cannot decode Opus (webm) or AAC (mp4) audio. Install gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad and gstreamer1.0-libav."
+        : "This system cannot decode Opus (webm) or AAC (mp4) audio.",
     );
     this.name = "UnsupportedCodecError";
   }
