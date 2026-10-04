@@ -1,11 +1,13 @@
+# Maintainer: opecko <https://github.com/opecko>
 # Builds ytdesk from source on Arch. Source tarball: run packaging/arch/make-src.sh first
 # (or point source=() at a release tarball / git URL once the repo is public).
 pkgname=ytdesk
 pkgver=1.1.1
 pkgrel=1
 pkgdesc="YouTube Music desktop client"
+url='https://github.com/opecko/ytdesk'
 arch=('x86_64')
-license=('custom')
+license=('MIT')
 depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'dbus' 'gst-plugins-base' 'gst-plugins-good' 'gst-libav' 'libayatana-appindicator')
 makedepends=('cargo' 'nodejs' 'npm')
 optdepends=('nodejs: JS runtime for the yt-dlp playback fallback'

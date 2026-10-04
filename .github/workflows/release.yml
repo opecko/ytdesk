@@ -1,6 +1,5 @@
-# Backup for when you can't build locally: builds the Windows installer, the Debian package and the Arch ytdesk-bin
+# Builds the Windows installer, the Debian package and the Arch ytdesk-bin
 # package on GitHub runners and attaches them, with SHA256SUMS and a changelog, to the release for a tag.
-# The usual path is local and costs no Actions minutes: scripts/release.sh --publish (see scripts/publish.sh).
 #
 # Run it from Actions → Release → Run workflow with an existing tag like v1.2.0 (tag it and push the tag first).
 # The tag must match the version in src-tauri/tauri.conf.json.

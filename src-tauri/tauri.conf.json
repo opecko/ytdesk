@@ -28,7 +28,11 @@
     "targets": [
       "deb"
     ],
-    "publisher": "ondra",
+    "publisher": "opecko",
+    "homepage": "https://github.com/opecko/ytdesk",
+    "copyright": "Copyright (c) 2026 opecko",
+    "license": "MIT",
+    "licenseFile": "../LICENSE",
     "category": "Music",
     "shortDescription": "YouTube Music desktop client",
     "longDescription": "Lightweight YouTube Music desktop client: home feed, library, search, radio, autoplay, queue chips and system tray controls.",

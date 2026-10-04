@@ -13,3 +13,6 @@ packaging/*/src/
 packaging/*/*.pkg.tar.zst
 packaging/out/
 release/
+CLAUDE.md
+PLAN.md
+docs/

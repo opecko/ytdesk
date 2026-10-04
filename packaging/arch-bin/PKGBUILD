@@ -1,11 +1,13 @@
+# Maintainer: opecko <https://github.com/opecko>
 # Repackages the Debian build (src-tauri/target/release/bundle/deb/ytdesk_<ver>_amd64.deb) for Arch.
 # Copy that .deb next to this file (packaging/arch/make-src.sh does it), then: makepkg -si
 pkgname=ytdesk-bin
 pkgver=1.1.1
 pkgrel=1
 pkgdesc="YouTube Music desktop client (prebuilt)"
+url='https://github.com/opecko/ytdesk'
 arch=('x86_64')
-license=('custom')
+license=('MIT')
 depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'dbus' 'gst-plugins-base' 'gst-plugins-good' 'gst-libav' 'libayatana-appindicator')
 optdepends=('nodejs: JS runtime for the yt-dlp playback fallback'
             'gnome-keyring: stores the login cookie (Secret Service)')

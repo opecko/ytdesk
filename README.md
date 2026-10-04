@@ -99,7 +99,12 @@ it's used only when the keyring is empty.
 
 - On any OS: `npm run tauri build` builds the installer for that OS in `src-tauri/target/release/bundle/`.
 - All packages at once (Linux host: Windows `.exe` via cross-compile, `.deb`, Arch package in Docker):
-  `scripts/release.sh`. With `--publish` it also tags the version and creates the GitHub release with a changelog.
+  `scripts/release.sh`. Packages land in `release/<version>/` with `SHA256SUMS`.
   Bump the version in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `package.json` and
   `packaging/arch*/PKGBUILD` first.
-- No local machine? **Actions → Release → Run workflow** builds everything on GitHub for an existing tag.
+- **Actions → Release → Run workflow** builds everything on GitHub for an existing tag and attaches it to the
+  release.
+
+## License
+
+[MIT](LICENSE)

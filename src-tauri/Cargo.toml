@@ -2,6 +2,10 @@
 name = "ytdesk"
 version = "1.1.1"
 edition = "2021"
+description = "Lightweight YouTube Music desktop client"
+authors = ["opecko"]
+license = "MIT"
+repository = "https://github.com/opecko/ytdesk"
 
 [lib]
 name = "ytdesk_lib"
