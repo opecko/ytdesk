@@ -1,0 +1,21 @@
+{"contents":{"singleColumnMusicWatchNextResultsRenderer":{"tabbedRenderer":{"watchNextTabbedResultsRenderer":{"tabs":[
+ {"tabRenderer":{"title":"Další v pořadí","content":{"musicQueueRenderer":{
+  "header":{"musicQueueHeaderRenderer":{"title":{"runs":[{"text":"Přehrávání ze stanice"}]},"subtitle":{"runs":[{"text":"Mix z roku X"}]}}},
+  "subHeaderChipCloud":{"chipCloudRenderer":{"chips":[
+   {"chipCloudChipRenderer":{"text":{"runs":[{"text":"Vše"}]},"isSelected":true,"navigationEndpoint":{"queueUpdateCommand":{"fetchContentsCommand":{"watchEndpoint":{"playlistId":"RDAMVMvid000000A1","params":"ALL"}}}}}},
+   {"chipCloudChipRenderer":{"text":{"runs":[{"text":"Rock"}]},"navigationEndpoint":{"queueUpdateCommand":{"fetchContentsCommand":{"watchEndpoint":{"playlistId":"RDATrock","params":"ROCK"}}}}}},
+   {"chipCloudChipRenderer":{"text":{"runs":[]}}},
+   {"somethingElse":{}}
+  ]}},
+  "content":{"playlistPanelRenderer":{"playlistId":"RDAMVMvid000000A1","contents":[
+   {"playlistPanelVideoRenderer":{"videoId":"vid000000A1","title":{"runs":[{"text":"Song A"}]},
+     "longBylineText":{"runs":[{"text":"Artist A","navigationEndpoint":{"browseEndpoint":{"browseId":"UCa","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ARTIST"}}}}},{"text":" • "},{"text":"Album A","navigationEndpoint":{"browseEndpoint":{"browseId":"MPREa","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ALBUM"}}}}}]},
+     "lengthText":{"runs":[{"text":"3:31"}]},"badges":[{"musicInlineBadgeRenderer":{"icon":{"iconType":"MUSIC_EXPLICIT_BADGE"}}}],
+     "thumbnail":{"thumbnails":[{"url":"https://i.ytimg.com/a.jpg","width":60}]}}},
+   {"playlistPanelVideoWrapperRenderer":{"primaryRenderer":{"playlistPanelVideoRenderer":{"videoId":"vid000000B2","title":{"runs":[{"text":"Song B"}]},"shortBylineText":{"runs":[{"text":"Artist B"}]}}}}},
+   {"playlistPanelVideoRenderer":{"videoId":"bad","title":{"runs":[{"text":"broken id"}]}}},
+   {"automixPreviewVideoRenderer":{"content":{"automixPlaylistVideoRenderer":{"navigationEndpoint":{"watchPlaylistEndpoint":{"playlistId":"RDAMPLx","params":"AUTO"}}}}}}
+  ],"continuations":[{"nextRadioContinuationData":{"continuation":"RADIO2"}}]}}}}}},
+ {"tabRenderer":{"title":"Texty","endpoint":{"browseEndpoint":{"browseId":"MPLYt_x","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_TRACK_LYRICS"}}}}}},
+ {"tabRenderer":{"title":"Související","endpoint":{"browseEndpoint":{"browseId":"MPTRt_x","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_TRACK_RELATED"}}}}}}
+]}}}}}

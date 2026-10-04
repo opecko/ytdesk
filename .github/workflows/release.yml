@@ -1,0 +1,145 @@
+# Builds the Windows installer, the Debian package and the Arch ytdesk-bin package for a release and attaches them,
+# with SHA256SUMS and a changelog, to the GitHub release.
+#
+# Start it in any of these ways:
+#   - publish a release in the GitHub UI with a new tag like v1.2.0 (your notes stay on top of the changelog)
+#   - push a tag: git tag v1.2.0 && git push origin v1.2.0 (the release is created for you)
+#   - Actions → Release → Run workflow, with an existing tag (rebuilds and replaces the files)
+# The tag must match the version in src-tauri/tauri.conf.json (bump it in every file listed in scripts/release.sh).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build, e.g. v1.2.0
+        required: true
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+
+jobs:
+  linux:
+    name: Linux (deb + Arch)
+    runs-on: ubuntu-24.04 # the deb depends on glibc >= 2.39
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Check tag matches app version
+        run: |
+          ver=$(jq -r .version src-tauri/tauri.conf.json)
+          [ "v$ver" = "$TAG" ] || { echo "::error::tag $TAG does not match tauri.conf.json version $ver"; exit 1; }
+
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            librsvg2-dev libssl-dev libdbus-1-dev libxdo-dev patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - name: Tests
+        run: |
+          npx tsc --noEmit
+          npx vitest run
+          cd src-tauri && cargo test --quiet
+
+      - name: Debian package
+        run: npx tauri build --bundles deb
+
+      - name: Arch package (built and smoke-tested in an archlinux container)
+        run: packaging/arch/docker-build.sh bin
+
+      - name: Collect
+        run: |
+          mkdir dist-release
+          cp src-tauri/target/release/bundle/deb/*.deb packaging/out/ytdesk-bin-*.pkg.tar.zst dist-release/
+          ls -lh dist-release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist-release/*
+          if-no-files-found: error
+
+  windows:
+    name: Windows (NSIS installer)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+      - name: Windows installer
+        run: npx tauri build --bundles nsis
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
+
+  release:
+    name: Publish
+    needs: [linux, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0 # the changelog needs the previous tag
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Checksums and changelog
+        run: |
+          (cd out && sha256sum -- * > SHA256SUMS && cat SHA256SUMS)
+          scripts/changelog.sh "$TAG" > changelog.md
+
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # Keep notes written in the UI; replace a changelog from an earlier run of this workflow.
+            gh release view "$TAG" --json body -q .body | sed '/^## Changes$/,$d' > notes.md
+            if [ -s notes.md ] && grep -q '[^[:space:]]' notes.md; then printf '\n' >> notes.md; else : > notes.md; fi
+            cat changelog.md >> notes.md
+            gh release edit "$TAG" --notes-file notes.md
+            gh release upload "$TAG" out/* --clobber
+          else
+            gh release create "$TAG" out/* --verify-tag --title "ytdesk ${TAG#v}" --notes-file changelog.md
+          fi

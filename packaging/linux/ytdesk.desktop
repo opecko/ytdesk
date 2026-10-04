@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ytdesk
+Comment=YouTube Music desktop client
+Exec=ytdesk
+Icon=ytdesk
+Terminal=false
+Categories=AudioVideo;Audio;Music;
+StartupWMClass=ytdesk

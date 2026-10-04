@@ -1,0 +1,11 @@
+{"contents":{"twoColumnBrowseResultsRenderer":{"secondaryContents":{"sectionListRenderer":{"contents":[{"musicPlaylistShelfRenderer":{"contents":[
+ {"musicResponsiveListItemRenderer":{"thumbnail":{"musicThumbnailRenderer":{"thumbnail":{"thumbnails":[{"url":"https://i.ytimg.com/a.jpg","width":60,"height":60}]}}},
+  "flexColumns":[
+   {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Song A","navigationEndpoint":{"watchEndpoint":{"videoId":"vid000000A1","watchEndpointMusicSupportedConfigs":{"watchEndpointMusicConfig":{"musicVideoType":"MUSIC_VIDEO_TYPE_ATV"}}}}}]}}},
+   {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Artist A","navigationEndpoint":{"browseEndpoint":{"browseId":"UCa","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ARTIST"}}}}}]}}},
+   {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Album A","navigationEndpoint":{"browseEndpoint":{"browseId":"MPREa","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ALBUM"}}}}}]}}}],
+  "fixedColumns":[{"musicResponsiveListItemFixedColumnRenderer":{"text":{"runs":[{"text":"5:24"}]}}}],
+  "playlistItemData":{"videoId":"vid000000A1"},
+  "menu":{"menuRenderer":{"topLevelButtons":[{"likeButtonRenderer":{"likeStatus":"LIKE"}}]}}}},
+ {"continuationItemRenderer":{"continuationEndpoint":{"continuationCommand":{"token":"TOKEN2"}}}}
+]}}]}}}}}

@@ -1,0 +1,48 @@
+import { useState } from "react";
+import type { Playlist, Track } from "../api/types";
+import { getPlaylist } from "../api/ytm";
+import LoadMore from "../components/LoadMore";
+import PageHeader from "../components/PageHeader";
+import { ErrorBox, Loading } from "../components/Status";
+import TrackList from "../components/TrackList";
+import { useAsync } from "../hooks/useData";
+
+interface Extra {
+  id: string;
+  tracks: Track[];
+  next: Playlist["loadMore"];
+}
+
+export default function PlaylistView({ id }: { id: string }) {
+  const head = useAsync<Playlist>(`playlist:${id}`, () => getPlaylist(id));
+  const [extra, setExtra] = useState<Extra | null>(null);
+  const [more, setMore] = useState<{ loading: boolean; error?: Error }>({ loading: false });
+
+  if (head.error) return <ErrorBox error={head.error} onRetry={head.reload} />;
+  if (!head.data) return <Loading variant="list" />;
+  const p = head.data;
+  const state: Extra = extra?.id === id ? extra : { id, tracks: [], next: p.loadMore };
+  const tracks = [...p.tracks, ...state.tracks];
+
+  const loadMore = async () => {
+    if (!state.next || more.loading) return;
+    setMore({ loading: true });
+    try {
+      const page = await state.next();
+      setExtra({ id, tracks: [...state.tracks, ...page.tracks], next: page.loadMore });
+      setMore({ loading: false });
+    } catch (e) {
+      setMore({ loading: false, error: e instanceof Error ? e : new Error(String(e)) });
+    }
+  };
+
+  return (
+    <>
+      <PageHeader title={p.title} subtitle={p.subtitle} thumbnail={p.thumbnail} tracks={tracks} playlistId={id}
+        radio={{ type: id.startsWith("RD") ? "mix" : "playlist", id }} />
+      <TrackList tracks={tracks} context={{ playlistId: id, title: p.title }} />
+      {more.error && <ErrorBox error={more.error} onRetry={loadMore} />}
+      <LoadMore active={!!state.next && !more.error} loading={more.loading} onVisible={loadMore} />
+    </>
+  );
+}

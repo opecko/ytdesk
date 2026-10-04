@@ -1,0 +1,14 @@
+{"contents":{"singleColumnBrowseResultsRenderer":{"tabs":[{"tabRenderer":{"content":{"sectionListRenderer":{
+ "header":{"chipCloudRenderer":{"chips":[{"chipCloudChipRenderer":{"text":{"runs":[{"text":"Relax"}]},"navigationEndpoint":{"browseEndpoint":{"browseId":"FEmusic_home","params":"RELAX"}},"isSelected":false}}]}},
+ "contents":[
+  {"musicCarouselShelfRenderer":{"header":{"musicCarouselShelfBasicHeaderRenderer":{"strapline":{"runs":[{"text":"PODOBNÉ JAKO"}]},"title":{"runs":[{"text":"Poslechnout znovu"}]},
+    "moreContentButton":{"buttonRenderer":{"navigationEndpoint":{"browseEndpoint":{"browseId":"FEmusic_listen_again"}}}}}},
+   "contents":[
+    {"musicTwoRowItemRenderer":{"title":{"runs":[{"text":"Tame Impala"}]},"subtitle":{"runs":[{"text":"Interpret"}]},"navigationEndpoint":{"browseEndpoint":{"browseId":"UCtame","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ARTIST"}}}}}},
+    {"musicTwoRowItemRenderer":{"aspectRatio":"MUSIC_TWO_ROW_ITEM_THUMBNAIL_ASPECT_RATIO_RECTANGLE_16_9","title":{"runs":[{"text":"Loser"}]},"subtitle":{"runs":[{"text":"Tame Impala","navigationEndpoint":{"browseEndpoint":{"browseId":"UCtame","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ARTIST"}}}}}]},"navigationEndpoint":{"watchEndpoint":{"videoId":"vid000000LO"}}}},
+    {"musicTwoRowItemRenderer":{"title":{"runs":[{"text":"Můj supermix"}]},"subtitle":{"runs":[{"text":"Pink Floyd, Kabát"}]},"navigationEndpoint":{"watchPlaylistEndpoint":{"playlistId":"RDTMAK5uy_mix"}}}}]}},
+  {"musicCarouselShelfRenderer":{"header":{"musicCarouselShelfBasicHeaderRenderer":{"title":{"runs":[{"text":"Rychlý výběr"}]}}},"contents":[
+    {"musicResponsiveListItemRenderer":{"flexColumns":[{"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Song","navigationEndpoint":{"watchEndpoint":{"videoId":"vid0000000S"}}}]}}}],"playlistItemData":{"videoId":"vid0000000S"}}}]}},
+  {"musicTastebuilderShelfRenderer":{}}
+ ],
+ "continuations":[{"nextContinuationData":{"continuation":"HOME2"}}]}}}}]}}}

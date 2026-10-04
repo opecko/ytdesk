@@ -1,0 +1,15 @@
+node_modules
+target
+dist
+*.log
+.env
+
+debug/
+.env.local
+packaging/arch/*.tar.gz
+packaging/arch-bin/*.deb
+packaging/*/pkg/
+packaging/*/src/
+packaging/*/*.pkg.tar.zst
+packaging/out/
+release/

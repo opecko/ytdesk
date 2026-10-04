@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ytdesk",
+  "version": "1.1.1",
+  "identifier": "dev.ytdesk.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ytdesk",
+        "width": 1200,
+        "height": 780,
+        "minWidth": 800,
+        "minHeight": 520
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "deb"
+    ],
+    "publisher": "ondra",
+    "category": "Music",
+    "shortDescription": "YouTube Music desktop client",
+    "longDescription": "Lightweight YouTube Music desktop client: home feed, library, search, radio, autoplay, queue chips and system tray controls.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "linux": {
+      "deb": {
+        "section": "sound",
+        "priority": "optional",
+        "depends": [
+          "libc6 (>= 2.39)",
+          "gstreamer1.0-plugins-base",
+          "gstreamer1.0-plugins-good",
+          "gstreamer1.0-libav"
+        ],
+        "recommends": [
+          "nodejs",
+          "ca-certificates",
+          "gnome-keyring"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{"contents":{"tabbedSearchResultsRenderer":{"tabs":[{"tabRenderer":{"content":{"sectionListRenderer":{
+ "header":{"chipCloudRenderer":{"chips":[{"chipCloudChipRenderer":{"text":{"runs":[{"text":"Skladby"}]},"navigationEndpoint":{"searchEndpoint":{"query":"q","params":"SONGS"}}}}]}},
+ "contents":[
+  {"itemSectionRenderer":{"contents":[{"messageRenderer":{"text":{"runs":[{"text":"O těchto výsledcích"}]}}}]}},
+  {"musicCardShelfRenderer":{"title":{"runs":[{"text":"Tame Impala","navigationEndpoint":{"browseEndpoint":{"browseId":"UCtame","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ARTIST"}}}}}]},"subtitle":{"runs":[{"text":"Interpret"},{"text":" • "},{"text":"250 mil."}]},
+   "contents":[{"musicResponsiveListItemRenderer":{"flexColumns":[{"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Borderline","navigationEndpoint":{"watchEndpoint":{"videoId":"vid0000000B"}}}]}}}],"playlistItemData":{"videoId":"vid0000000B"}}}]}},
+  {"itemSectionRenderer":{"contents":[{"musicShelfRenderer":{"title":{"runs":[{"text":"Další výsledky"}]}}}]}},
+  {"itemSectionRenderer":{"contents":[{"musicResponsiveListItemRenderer":{"flexColumns":[
+    {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Currents"}]}}},
+    {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Album"},{"text":" • "},{"text":"Tame Impala"}]}}}],
+    "overlay":{"musicItemThumbnailOverlayRenderer":{"content":{"musicPlayButtonRenderer":{"playNavigationEndpoint":{"watchEndpoint":{"videoId":"x0000000000"}}}}}},
+    "navigationEndpoint":{"browseEndpoint":{"browseId":"MPREcur","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ALBUM"}}}}}}]}},
+  {"itemSectionRenderer":{"contents":[{"musicResponsiveListItemRenderer":{"flexColumns":[
+    {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"The Moment","navigationEndpoint":{"watchEndpoint":{"videoId":"vid0000000M","watchEndpointMusicSupportedConfigs":{"watchEndpointMusicConfig":{"musicVideoType":"MUSIC_VIDEO_TYPE_ATV"}}}}}]}}},
+    {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Skladba"},{"text":" • "},{"text":"Tame Impala","navigationEndpoint":{"browseEndpoint":{"browseId":"UCtame","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_ARTIST"}}}}}]}}}],
+    "playlistItemData":{"videoId":"vid0000000M"}}}]}},
+  {"itemSectionRenderer":{"contents":[{"musicResponsiveListItemRenderer":{"flexColumns":[
+    {"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Let It Happen (Video)","navigationEndpoint":{"watchEndpoint":{"videoId":"vid0000000V","watchEndpointMusicSupportedConfigs":{"watchEndpointMusicConfig":{"musicVideoType":"MUSIC_VIDEO_TYPE_OMV"}}}}}]}}}],
+    "playlistItemData":{"videoId":"vid0000000V"}}}]}}
+ ]}}}}]}}}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Same mark as the sidebar logo: accent circle with a white play triangle. -->
+  <circle cx="512" cy="512" r="480" fill="#ff0033"/>
+  <path d="M410 318 L410 706 L722 512 Z" fill="#ffffff" stroke="#ffffff" stroke-width="48" stroke-linejoin="round"/>
+</svg>

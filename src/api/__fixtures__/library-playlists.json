@@ -1,0 +1,5 @@
+{"contents":{"singleColumnBrowseResultsRenderer":{"tabs":[{"tabRenderer":{"content":{"sectionListRenderer":{"contents":[{"gridRenderer":{"items":[
+ {"musicTwoRowItemRenderer":{"title":{"runs":[{"text":"Nový playlist","navigationEndpoint":{"createPlaylistEndpoint":{}}}]},"navigationEndpoint":{"createPlaylistEndpoint":{}}}},
+ {"musicTwoRowItemRenderer":{"thumbnailRenderer":{"musicThumbnailRenderer":{"thumbnail":{"thumbnails":[{"url":"https://lh3.googleusercontent.com/x=w226-h226-l90-rj","width":226,"height":226}]}}},"aspectRatio":"MUSIC_TWO_ROW_ITEM_THUMBNAIL_ASPECT_RATIO_SQUARE","title":{"runs":[{"text":"Hudba, která se líbila","navigationEndpoint":{"browseEndpoint":{"browseId":"VLLM","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_PLAYLIST"}}}}}]},"subtitle":{"runs":[{"text":"Automatický playlist"}]},"navigationEndpoint":{"browseEndpoint":{"browseId":"VLLM","browseEndpointContextSupportedConfigs":{"browseEndpointContextMusicConfig":{"pageType":"MUSIC_PAGE_TYPE_PLAYLIST"}}}}}},
+ {"someFutureRenderer":{}}
+],"continuations":[{"nextContinuationData":{"continuation":"TOKEN1"}}]}}]}}}}]}}}

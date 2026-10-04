@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* YT Music-like dark palette; one accent. Spacing follows Tailwind's 4px scale used in 8px steps. */
+:root {
+  color-scheme: dark;
+  --bg: #030303;
+  --surface-1: #0f0f0f;
+  --surface-2: #1d1d1d;
+  --surface-3: #282828;
+  --hover: rgba(255, 255, 255, 0.1);
+  --active: rgba(255, 255, 255, 0.16);
+  --line: rgba(255, 255, 255, 0.1);
+  --text-1: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.7);
+  --text-3: rgba(255, 255, 255, 0.5);
+  --accent: #ff0033;
+  --danger: #ff6b6b;
+  --radius: 8px;
+  --font: "Inter", "Roboto", "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--text-2); outline-offset: 2px; }
+
+/* Thin scrollbars whose thumb only shows while hovering the scroll area; gutters stay reserved so content never jumps. */
+::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; }
+:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); }
+.scroll-y { overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@layer components {
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    color: var(--text-2);
+  }
+  .icon-btn:hover { background: var(--hover); color: var(--text-1); }
+  .icon-btn:active { background: var(--active); transform: scale(0.94); }
+  .icon-btn[aria-pressed="true"] { color: var(--text-1); }
+  .icon-btn:disabled { opacity: 0.4; background: transparent; transform: none; }
+
+  .chip {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-1);
+  }
+  .chip:hover { background: rgba(255, 255, 255, 0.2); }
+  .chip[aria-pressed="true"] { background: var(--text-1); color: #0f0f0f; }
+
+  /* Static placeholder: an infinite shimmer repaints the whole area every frame (software-rendered on WebKitGTK). */
+  .skeleton {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+  }
+}
+
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.slide-up { animation: slide-up 200ms cubic-bezier(0.2, 0, 0, 1); }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in { animation: fade-in 300ms ease-out; }
