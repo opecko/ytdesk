@@ -1,5 +1,5 @@
 # ytdesk
-
+vibe coded stuff btw
 Desktop YouTube Music client: Tauri 2 + React + TypeScript. Custom UI; data from InnerTube via
 [youtubei.js](https://github.com/LuanRT/YouTube.js) (no DOM scraping, no hidden music.youtube.com view).
 
