@@ -14,12 +14,14 @@ export interface MenuEntry {
 const W = 240;
 
 /** ⋮ button with a portal popover (never clipped by scroll containers); closes on outside click, Esc, scroll. */
-export default function Menu({ entries, label = "More actions", className = "", onOpen }: {
+export default function Menu({ entries, label = "More actions", className = "", onOpen, trigger }: {
   /** Re-evaluated on every render while open, so entries that load asynchronously appear in place. */
   entries: () => MenuEntry[];
   label?: string;
   className?: string;
   onOpen?: () => void;
+  /** Custom button content (e.g. a "Save" pill); `className` then styles the whole button. Default: ⋮ icon. */
+  trigger?: ReactNode;
 }) {
   const btn = useRef<HTMLButtonElement>(null);
   const pop = useRef<HTMLDivElement>(null);
@@ -58,7 +60,7 @@ export default function Menu({ entries, label = "More actions", className = "", 
     <>
       <button
         ref={btn}
-        className={`icon-btn h-8 w-8 shrink-0 ${className}`}
+        className={trigger ? className : `icon-btn h-8 w-8 shrink-0 ${className}`}
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -69,7 +71,7 @@ export default function Menu({ entries, label = "More actions", className = "", 
           setOpen((o) => !o);
         }}
       >
-        <MoreVertical size={20} />
+        {trigger ?? <MoreVertical size={20} />}
       </button>
       {open &&
         createPortal(

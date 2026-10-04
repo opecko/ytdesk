@@ -139,7 +139,8 @@ export async function fetchChipTracks(exec: Exec, chip: QueueChip, currentId: st
 
 export type RadioSource =
   | { type: "song"; id: string }
-  | { type: "playlist" | "mix"; id: string }
+  | { type: "playlist"; id: string }
+  | { type: "mix"; id: string; params?: string }
   | { type: "album"; id: string }
   | { type: "artist"; id: string };
 
@@ -185,7 +186,7 @@ export async function radioEndpoint(exec: Exec, src: RadioSource): Promise<{ arg
       // Same endpoint the song menu's "Start radio" item carries.
       return { args: { videoId: src.id, playlistId: `RDAMVM${src.id}`, params: "wAEB" }, via: "fallback" };
     case "mix":
-      return { args: { playlistId: src.id }, via: "fallback" };
+      return { args: { playlistId: src.id, ...(src.params ? { params: src.params } : {}) }, via: "fallback" };
     case "playlist": {
       const ep = findRadioEndpoint(await exec("/browse", { browseId: src.id.startsWith("VL") ? src.id : `VL${src.id}` }).catch(() => null));
       return ep ? { args: ep, via: "page" } : { args: { playlistId: `RDAMPL${src.id.replace(/^VL/, "")}` }, via: "fallback" };

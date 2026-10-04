@@ -1,8 +1,10 @@
-import { Play } from "lucide-react";
+import { ListPlus, Play, Radio, Shuffle } from "lucide-react";
 import { useState } from "react";
-import type { Chip, Item, Page, SearchGroup, SearchResults, Track } from "../api/types";
+import type { CardAction, Chip, Item, Page, SearchGroup, SearchResults, Track } from "../api/types";
 import { search } from "../api/ytm";
+import ItemMenu, { playlistEntries } from "../components/ItemMenu";
 import LoadMore from "../components/LoadMore";
+import Menu from "../components/Menu";
 import { ItemGrid, ShelfRow } from "../components/Shelves";
 import { EmptyState, ErrorBox, Loading } from "../components/Status";
 import Thumb from "../components/Thumb";
@@ -22,32 +24,80 @@ function activate(item: Item) {
   else openItem(item);
 }
 
-function TopResult({ items }: { items: Item[] }) {
+const pill = "flex h-9 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium";
+const primary = `${pill} bg-white text-black hover:bg-white/90`;
+const secondary = `${pill} border border-white/25 hover:bg-white/10`;
+
+/** Shuffle / Mix (artists) and Play / Save (songs), as on the YouTube Music top-result card. */
+function CardButtons({ top, actions }: { top: Item; actions: CardAction[] }) {
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-3">
+      {actions.map((a, i) => {
+        const cls = i === 0 ? primary : secondary;
+        if (a.kind === "save")
+          return isTrack(top) ? (
+            <Menu key={a.kind} entries={() => playlistEntries(top)} label={`Save ${top.title} to a playlist`} className={cls}
+              trigger={<><ListPlus size={18} aria-hidden /> {a.label}</>} />
+          ) : null;
+        const run = () => {
+          if (a.kind === "play" && isTrack(top)) usePlayer.getState().playRadio(top);
+          else if (a.playlistId) void usePlayer.getState().startRadio({ type: "mix", id: a.playlistId, params: a.params }, top.title);
+        };
+        const icon = a.kind === "shuffle" ? <Shuffle size={18} aria-hidden /> : a.kind === "mix" ? <Radio size={18} aria-hidden /> : <Play size={18} fill="currentColor" aria-hidden />;
+        return <button key={a.kind} onClick={run} className={cls}>{icon} {a.label}</button>;
+      })}
+    </div>
+  );
+}
+
+function TopResult({ items, actions }: { items: Item[]; actions: CardAction[] }) {
   const [top, ...rest] = items;
   if (!top) return null;
+  const round = top.art === "round" || top.type === "artist";
   return (
-    <section className="mb-8">
-      <h2 className="mb-4 text-xl font-bold">Top result</h2>
-      <div className="flex flex-col gap-4 lg:flex-row">
-        <button
-          onClick={() => activate(top)}
-          className="group flex min-w-0 items-center gap-4 rounded-lg bg-[var(--surface-2)] p-4 text-left hover:bg-[var(--surface-3)] lg:w-[420px]"
-        >
-          <Thumb src={top.thumbnail} round={top.art === "round"} className="h-24 w-24 shrink-0" />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-xl font-bold">{top.title}</span>
-            <span className="mt-1 block truncate text-sm text-[var(--text-2)]">{top.subtitle}</span>
-          </span>
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black opacity-0 group-hover:opacity-100" aria-hidden>
-            <Play size={20} fill="currentColor" />
-          </span>
+    <section className="mb-10 flex flex-col overflow-hidden rounded-lg bg-[linear-gradient(110deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] md:flex-row" aria-label="Top result">
+      <div className="flex min-w-0 flex-1 items-center gap-5 p-5">
+        <button onClick={() => activate(top)} aria-label={isTrack(top) ? `Play ${top.title}` : `Open ${top.title}`} className="group relative shrink-0">
+          <Thumb src={top.thumbnail} round={round} className="h-28 w-28" />
+          {isTrack(top) && (
+            <span className="absolute inset-0 flex items-center justify-center rounded-[var(--radius)] bg-black/30 group-hover:bg-black/50" aria-hidden>
+              <Play size={36} fill="currentColor" />
+            </span>
+          )}
         </button>
-        {rest.length > 0 && (
-          <div className="min-w-0 flex-1">
-            <TrackList tracks={rest.filter(isTrack)} radio compact />
-          </div>
-        )}
+        <div className="min-w-0 flex-1">
+          <button onClick={() => activate(top)} className="block max-w-full truncate text-left text-3xl font-bold tracking-tight hover:underline">{top.title}</button>
+          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm text-[var(--text-2)]">
+            {isTrack(top) && top.explicit && <span className="shrink-0 rounded-sm bg-[var(--text-3)] px-1 text-[10px] font-bold text-black" aria-label="Explicit">E</span>}
+            <span className="truncate">{top.subtitle}</span>
+          </p>
+          {actions.length > 0 && <CardButtons top={top} actions={actions} />}
+        </div>
+        <ItemMenu item={top} className="self-start" />
       </div>
+      {rest.length > 0 && (
+        <ul className="flex min-w-0 flex-1 flex-col justify-center border-t border-white/10 p-2 md:border-l md:border-t-0">
+          {rest.slice(0, 3).map((r) => (
+            <li key={`${r.type}:${r.id}`} className="group flex items-center rounded-[var(--radius)] pr-1 hover:bg-white/10">
+              <button onClick={() => activate(r)} className="flex min-w-0 flex-1 items-center gap-4 p-2 text-left">
+                <span className="relative shrink-0">
+                  <Thumb src={r.thumbnail} round={r.type === "artist"} className="h-14 w-14" />
+                  {isTrack(r) && (
+                    <span className="absolute inset-0 flex items-center justify-center rounded-[var(--radius)] bg-black/60 opacity-0 group-hover:opacity-100" aria-hidden>
+                      <Play size={20} fill="currentColor" />
+                    </span>
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-base font-medium">{r.title}</span>
+                  <span className="block truncate text-sm text-[var(--text-2)]">{r.subtitle}</span>
+                </span>
+              </button>
+              <ItemMenu item={r} className="opacity-0 focus-visible:opacity-100 group-hover:opacity-100" />
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
@@ -57,7 +107,7 @@ function Overview({ res }: { res: SearchResults }) {
   if (empty) return <EmptyState title="No results" detail={res.messages.join(" ") || "Try a different search."} />;
   return (
     <>
-      <TopResult items={res.top} />
+      <TopResult items={res.top} actions={res.topActions} />
       {res.shelves.map((s, i) => (
         <section key={`${s.title}:${i}`} className="mb-8">
           <h2 className="mb-4 text-xl font-bold">{s.title}</h2>
@@ -106,7 +156,7 @@ export default function SearchView({ query }: { query: string }) {
   const chips = overview.data?.chips.filter((c) => c.searchParams) ?? [];
 
   return (
-    <>
+    <div className="mx-auto w-full max-w-[920px]">
       <div className="no-scrollbar -mx-2 mb-6 flex gap-2 overflow-x-auto px-2" role="toolbar" aria-label="Filter results">
         {chips.map((c) => (
           <button key={c.label} className="chip" aria-pressed={chip?.label === c.label} onClick={() => setChip(chip?.label === c.label ? null : c)}>
@@ -123,6 +173,6 @@ export default function SearchView({ query }: { query: string }) {
       ) : (
         <Overview res={overview.data} />
       )}
-    </>
+    </div>
   );
 }

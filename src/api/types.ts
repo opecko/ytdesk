@@ -100,9 +100,20 @@ export interface BrowseRef {
   params?: string;
 }
 
+/** Button on the search top-result card (Shuffle / Mix for artists, Play / Save for songs). */
+export interface CardAction {
+  kind: "shuffle" | "mix" | "play" | "save";
+  label: string;
+  playlistId?: string;
+  params?: string;
+  videoId?: string;
+}
+
 export interface Shelf {
   title: string;
   items: Item[];
+  /** Top-result card buttons (layout "card"). */
+  actions?: CardAction[];
   strapline?: string;
   layout?: "carousel" | "list" | "grid" | "card";
   /** Carousel of list rows (quick picks): rendered as a multi-row column grid. */
@@ -123,6 +134,7 @@ export type SearchGroup = "songs" | "videos" | "albums" | "artists" | "playlists
 
 export interface SearchResults {
   top: Item[];
+  topActions: CardAction[];
   /** Server-titled shelves (e.g. "Poslechnout znovu"). */
   shelves: Shelf[];
   groups: { id: SearchGroup; items: Item[] }[];

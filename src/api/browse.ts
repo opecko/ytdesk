@@ -49,6 +49,7 @@ export function groupOf(i: Item): SearchGroup {
 
 export function toSearchResults(page: BrowsePage): SearchResults {
   const top = page.shelves.filter((s) => s.layout === "card").flatMap((s) => s.items);
+  const topActions = page.shelves.find((s) => s.layout === "card")?.actions ?? [];
   const shelves = page.shelves.filter((s) => s.layout !== "card" && s.title && s.items.length);
   const loose = page.shelves.filter((s) => s.layout !== "card" && !s.title).flatMap((s) => s.items);
   const buckets = new Map<SearchGroup, Item[]>();
@@ -56,6 +57,7 @@ export function toSearchResults(page: BrowsePage): SearchResults {
   const next = page.shelves.find((s) => s.next)?.next ?? page.next;
   return {
     top,
+    topActions,
     shelves,
     groups: GROUP_ORDER.filter((g) => buckets.has(g)).map((id) => ({ id, items: buckets.get(id)! })),
     chips: page.chips,

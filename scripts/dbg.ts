@@ -113,7 +113,8 @@ switch (cmd) {
       return { logged_in: loggedInFlag(d), ...shape(d) };
     });
     const sum = (r: Awaited<ReturnType<typeof searchPage>>) => ({
-      top: r.top.map((i) => `${i.type}:${i.title}`),
+      top: r.top.map((i) => `${i.type}:${i.title}${"explicit" in i && i.explicit ? " [E]" : ""}`),
+      topActions: r.topActions.map((a) => `${a.kind}:${a.label}:${a.playlistId ?? a.videoId ?? "-"}${a.params ? "+params" : ""}`),
       shelves: r.shelves.map((x) => `${x.title}(${x.items.length})`),
       groups: r.groups.map((g) => `${g.id}(${g.items.length}): ${g.items.slice(0, 2).map((i) => i.title).join(" | ")}`),
       chips: r.chips.map((c) => `${c.label}${c.searchParams ? "*" : ""}`),
@@ -128,6 +129,38 @@ switch (cmd) {
       return { all: sum(all), filteredBy: chip?.label, filtered: filtered && sum(filtered), more: more && sum(more) };
     });
     out("search", { query: arg, raw: { logged_in: (rawRes as J).logged_in, error: (rawRes as J).error }, parsed });
+    break;
+  }
+  case "topplay": {
+    // topplay <query>: runs every top-card Shuffle/Mix action through startRadio.
+    const res = await searchPage(exec, arg);
+    const runs = [];
+    for (const a of res.topActions.filter((x) => x.playlistId)) {
+      runs.push(await step(async () => {
+        const q = await startRadio(exec, { type: "mix", id: a.playlistId!, params: a.params });
+        return { action: a.kind, tracks: q.tracks.length, first: q.tracks.slice(0, 3).map((t) => `${t.title} - ${t.artists[0] ?? ""}`), title: q.title };
+      }));
+    }
+    out("topplay", { query: arg, runs });
+    break;
+  }
+  case "card": {
+    // Search top-result card: buttons, subtitle and inline items, without the whole response.
+    const d = await raw("/search", { query: arg });
+    const card = findNode(d, "musicCardShelfRenderer") as J;
+    const ep = (e: J) => e && Object.fromEntries(Object.entries(e).filter(([k]) => /Endpoint$/.test(k)).map(([k, v]: [string, J]) =>
+      [k, { playlistId: v.playlistId, videoId: v.videoId, params: v.params ? "yes" : undefined, browseId: v.browseId }]));
+    out("card", {
+      query: arg,
+      keys: card && Object.keys(card),
+      title: card?.title?.runs?.map((r: J) => ({ text: r.text, nav: ep(r.navigationEndpoint) })),
+      subtitle: card?.subtitle?.runs?.map((r: J) => r.text).join(""),
+      thumbnail: card && Object.keys(card.thumbnail ?? {}),
+      buttons: card?.buttons?.map((b: J) => ({ text: b.buttonRenderer?.text?.runs?.[0]?.text, icon: b.buttonRenderer?.icon?.iconType, cmd: ep(b.buttonRenderer?.command) })),
+      onTap: ep(card?.onTap),
+      menu: !!card?.menu,
+      contents: card?.contents?.map((c: J) => Object.keys(c)[0]),
+    });
     break;
   }
   case "chips": {

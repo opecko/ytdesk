@@ -23,7 +23,7 @@ export function radioSource(item: Item) {
   return { type: isMix(item) ? ("mix" as const) : ("playlist" as const), id: item.id };
 }
 
-function playlistEntries(track: Track): MenuEntry[] {
+export function playlistEntries(track: Track): MenuEntry[] {
   const lib = useLibrary.getState();
   if (!lib.playlists) void lib.load();
   return (lib.playlists ?? [])

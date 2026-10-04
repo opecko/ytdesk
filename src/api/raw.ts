@@ -1,6 +1,6 @@
 // Defensive parsers for raw InnerTube (WEB_REMIX) JSON. Unknown nodes are skipped, never thrown on.
 import { parseTrackMenu } from "./menu";
-import type { BrowsePage, BrowseRef, Chip, Continuation, EpisodeInfo, Item, Rating, Shelf, Track } from "./types";
+import type { BrowsePage, BrowseRef, CardAction, Chip, Continuation, EpisodeInfo, Item, Rating, Shelf, Track } from "./types";
 
 type R = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -119,6 +119,24 @@ const watchOf = (n: R) =>
   n?.overlay?.musicItemThumbnailOverlayRenderer?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint ??
   n?.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint;
 
+const CARD_ICONS: Record<string, CardAction["kind"]> = { MUSIC_SHUFFLE: "shuffle", MIX: "mix", PLAY_ARROW: "play", PLAYLIST_ADD: "save" };
+
+/** Shuffle / Mix / Play / Save buttons of the search top-result card. */
+function cardActions(n: R): CardAction[] {
+  return arr(n.buttons).flatMap((b: R): CardAction[] => {
+    const r = b?.buttonRenderer;
+    const kind = CARD_ICONS[r?.icon?.iconType];
+    if (!kind) return [];
+    const cmd = r.command ?? r.navigationEndpoint ?? {};
+    const w = cmd.watchPlaylistEndpoint ?? cmd.watchEndpoint ?? cmd.addToPlaylistEndpoint ?? {};
+    const a: CardAction = { kind, label: runsText(r.text) || kind };
+    if (w.playlistId) a.playlistId = w.playlistId;
+    if (w.params) a.params = w.params;
+    if (w.videoId) a.videoId = w.videoId;
+    return kind === "save" || a.playlistId || a.videoId ? [a] : [];
+  });
+}
+
 /** Search "top result" card: the card itself plus its inline items (top songs etc.). */
 function mapCard(n: R): Item[] {
   const title = runsText(n.title);
@@ -133,6 +151,7 @@ function mapCard(n: R): Item[] {
     top = { type: "track", id: watch.videoId, title, subtitle, thumbnail, artists: info.artists, album: info.album, kind: subRuns[0]?.text };
     const mvt = watch.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType ?? "";
     if (mvt && !/ATV|OFFICIAL_SOURCE_MUSIC|PRIVATELY_OWNED/.test(mvt)) top.art = "wide";
+    if (JSON.stringify(n.subtitleBadges ?? []).includes("EXPLICIT")) top.explicit = true;
   }
   if (top && top.type !== "artist" && !top.kind) top.kind = subRuns[0]?.text;
   return [top, ...mapRawItems(n.contents)].filter((i): i is Item => !!i);
@@ -274,7 +293,7 @@ function mapSection(node: R, out: Shelf[], messages: string[]) {
     }
     case "musicCardShelfRenderer": {
       const items = mapCard(n);
-      if (items.length) out.push({ title: runsText(n.header?.musicCardShelfHeaderBasicRenderer?.title), items, layout: "card" });
+      if (items.length) out.push({ title: runsText(n.header?.musicCardShelfHeaderBasicRenderer?.title), items, layout: "card", actions: cardActions(n) });
       return;
     }
     case "musicDescriptionShelfRenderer":
