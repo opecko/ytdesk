@@ -48,6 +48,7 @@ describe("makeYtFetch", () => {
     const { calls, f } = capture();
     await f("https://www.youtube.com/youtubei/v1/player", { method: "POST", body: '{"context":{"client":{"clientName":"VISIONOS"}}}', headers: { Cookie: "SAPISID=x" } });
     expect(calls[0].headers.get("Cookie")).toBeNull();
+    expect(calls[0].headers.get("Origin")).toBe("https://www.youtube.com");
   });
 });
 

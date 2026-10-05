@@ -249,6 +249,26 @@ switch (cmd) {
     out("suggest", { query: arg, parsed: r });
     break;
   }
+  case "origin": {
+    // origin <videoId>: VISIONOS /player with the Origin headers the Tauri HTTP plugin may add, anonymous.
+    const rows: string[] = [];
+    for (const origin of [null, "http://tauri.localhost", "tauri://localhost", "https://www.youtube.com"]) {
+      const f: typeof fetch = (input, init) => {
+        const h = new Headers(init?.headers);
+        if (origin) h.set("Origin", origin);
+        return fetch(input, { ...init, headers: h });
+      };
+      const y = await createInnertube(f, "", 0);
+      try {
+        const info = await y.getBasicInfo(rest[0], { client: "VISIONOS" });
+        rows.push(`${origin ?? "(none)"}: ${info.playability_status?.status}`);
+      } catch (e) {
+        rows.push(`${origin ?? "(none)"}: ${(e as Error).message.slice(-40)}`);
+      }
+    }
+    out("origin", { rows });
+    break;
+  }
   case "visionos": {
     // visionos <videoId>: formats VISIONOS offers and whether each codec's stream is fully served.
     const info = await yt.getBasicInfo(rest[0], { client: "VISIONOS" });

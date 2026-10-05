@@ -31,7 +31,12 @@ export function makeYtFetch(base: typeof fetch, opts: YtFetchOptions): typeof fe
       url = url.replace("://www.youtube.com/", "://music.youtube.com/");
     // Mobile clients reject cookie/SAPISID auth with 400 INVALID_ARGUMENT; send them anonymously.
     const mobile = api && typeof init?.body === "string" && /"clientName":"(ANDROID|IOS|VISIONOS)[A-Z_]*"/.test(init.body);
-    if (mobile) for (const h of ["Cookie", "Authorization", "X-Goog-AuthUser"]) headers.delete(h);
+    if (mobile) {
+      for (const h of ["Cookie", "Authorization", "X-Goog-AuthUser"]) headers.delete(h);
+      // Without an explicit Origin the Tauri HTTP plugin sends the app's own (http://tauri.localhost on Windows,
+      // tauri://localhost on Linux), and /player answers mobile clients with 403 (dbg origin, 2026-10-05).
+      headers.set("Origin", "https://www.youtube.com");
+    }
     if ((api || isStatsPing(url)) && cookie && !mobile) {
       const origin = new URL(url).origin; // must match Host or Google answers 400
       headers.set("Cookie", cookie);
