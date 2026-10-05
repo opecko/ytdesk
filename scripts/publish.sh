@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Publishes locally built packages from release/<version>/ as a GitHub release, with a changelog. Tags HEAD as
 # v<version> if the tag doesn't exist yet and pushes the branch and tag. An existing release gets its files replaced.
+# Hand-written highlights in release/notes/<version>.md (optional) go above the generated changelog.
 #   scripts/publish.sh            # version from src-tauri/tauri.conf.json
 #   scripts/publish.sh 1.2.0
 set -euo pipefail
@@ -30,7 +31,8 @@ export GITHUB_REPOSITORY
 GITHUB_REPOSITORY=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 notes=$(mktemp)
 trap 'rm -f "$notes"' EXIT
-scripts/changelog.sh "$tag" > "$notes"
+extra=release/notes/$ver.md
+{ [ -f "$extra" ] && { cat "$extra"; echo; }; scripts/changelog.sh "$tag"; } > "$notes"
 
 files=("$dir"/*)
 if gh release view "$tag" >/dev/null 2>&1; then
