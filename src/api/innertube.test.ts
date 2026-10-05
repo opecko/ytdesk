@@ -43,6 +43,12 @@ describe("makeYtFetch", () => {
     expect(calls[0].headers.get("Cookie")).toBeNull();
     expect(calls[0].headers.get("Authorization")).toBeNull();
   });
+
+  it("sends VISIONOS (stream fallback for non-Premium accounts) without cookie auth", async () => {
+    const { calls, f } = capture();
+    await f("https://www.youtube.com/youtubei/v1/player", { method: "POST", body: '{"context":{"client":{"clientName":"VISIONOS"}}}', headers: { Cookie: "SAPISID=x" } });
+    expect(calls[0].headers.get("Cookie")).toBeNull();
+  });
 });
 
 it("reads logged_in tracking param", () => {

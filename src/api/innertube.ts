@@ -30,7 +30,7 @@ export function makeYtFetch(base: typeof fetch, opts: YtFetchOptions): typeof fe
     if (api && typeof init?.body === "string" && init.body.includes('"clientName":"WEB_REMIX"'))
       url = url.replace("://www.youtube.com/", "://music.youtube.com/");
     // Mobile clients reject cookie/SAPISID auth with 400 INVALID_ARGUMENT; send them anonymously.
-    const mobile = api && typeof init?.body === "string" && /"clientName":"(ANDROID|IOS)[A-Z_]*"/.test(init.body);
+    const mobile = api && typeof init?.body === "string" && /"clientName":"(ANDROID|IOS|VISIONOS)[A-Z_]*"/.test(init.body);
     if (mobile) for (const h of ["Cookie", "Authorization", "X-Goog-AuthUser"]) headers.delete(h);
     if ((api || isStatsPing(url)) && cookie && !mobile) {
       const origin = new URL(url).origin; // must match Host or Google answers 400

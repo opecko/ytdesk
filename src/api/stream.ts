@@ -42,8 +42,13 @@ export class UnsupportedCodecError extends Error {
 
 type ClientName = NonNullable<NonNullable<Parameters<Awaited<ReturnType<typeof getClient>>["getBasicInfo"]>[1]>["client"]>;
 
-// dbg stream (2026-10-03): YTMUSIC + JS evaluator resolves in ~0.3 s with Range-able URLs; ANDROID/TV/IOS always fail.
-const CLIENTS: ClientName[] = ["YTMUSIC"];
+// dbg clients (2026-10-05): YTMUSIC streams are only served in full to Premium accounts. Without Premium (or signed
+// out) googlevideo answers 403 to any request past the first ~1 MB, which the media element reports as "Format
+// error". VISIONOS (sent without cookies, see innertube.ts) serves complete Opus and AAC streams to everyone, so it
+// is the client for non-Premium accounts; YTMUSIC stays first for Premium's 256 kbps formats.
+const CLIENTS: ClientName[] = ["YTMUSIC", "VISIONOS"];
+/** Audio itags YouTube Music only streams to Premium accounts (Opus 256 kbps, AAC 256 kbps). */
+const PREMIUM_ITAGS = new Set([774, 141]);
 const MIME: Record<Codec, string> = { opus: 'audio/webm; codecs="opus"', aac: 'audio/mp4; codecs="mp4a.40.2"' };
 const FORMAT_CODEC: Record<Codec, string> = { opus: "opus", aac: "mp4a" };
 const CONTAINER: Record<Codec, string> = { opus: "webm", aac: "mp4" };
@@ -62,6 +67,10 @@ async function viaInnertube(videoId: string, codecs: Codec[]): Promise<Stream> {
   for (const client of CLIENTS) {
     try {
       const info = await yt.getBasicInfo(videoId, { client });
+      if (client === "YTMUSIC" && !(info.streaming_data?.adaptive_formats ?? []).some((f) => PREMIUM_ITAGS.has(f.itag))) {
+        errors.push("YTMUSIC: no Premium formats, its streams would stop after ~1 MB");
+        continue;
+      }
       for (const codec of codecs) {
         try {
           // chooseFormat filters on container too and defaults to mp4, so Opus needs format "webm".
@@ -149,7 +158,8 @@ export function pickVideoFormat<T extends VideoFormat>(formats: T[]): T | undefi
 /** Video track (no audio) of a podcast episode; the <audio> element keeps playing the sound. */
 export async function getVideoStreamUrl(videoId: string): Promise<string> {
   const yt = await getClient();
-  const info = await yt.getBasicInfo(videoId, { client: "YTMUSIC" });
+  // VISIONOS: complete streams with or without Premium (see CLIENTS); YTMUSIC as a fallback.
+  const info = await yt.getBasicInfo(videoId, { client: "VISIONOS" }).catch(() => yt.getBasicInfo(videoId, { client: "YTMUSIC" }));
   const vids = (info.streaming_data?.adaptive_formats ?? []).filter((f) => f.has_video && !f.has_audio);
   const f = pickVideoFormat(vids);
   if (!f) throw new Error("No video for this episode");

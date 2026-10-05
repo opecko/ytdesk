@@ -19,8 +19,9 @@ function loadCookie(): string | null {
   return null;
 }
 
-const cookie = loadCookie();
-if (!cookie) {
+// YTM_ANON=1: no cookie at all (stands in for an account without Premium when testing playback).
+const cookie = process.env.YTM_ANON ? "" : loadCookie();
+if (cookie === null) {
   console.error("No cookie: set YTM_COOKIE or put YTM_COOKIE=... into .env.local (gitignored).");
   process.exit(2);
 }
@@ -28,7 +29,7 @@ if (!cookie) {
 const authUser = Number(process.env.YTM_AUTHUSER ?? 0);
 const statuses: string[] = [];
 const ytFetch = makeYtFetch(fetch, {
-  cookie: () => cookie,
+  cookie: () => cookie || null,
   authUser: () => authUser,
   onResponse: (r) => { if (!r.ok) statuses.push(`${r.status} ${r.url.split("?")[0]}`); },
 });
@@ -47,7 +48,7 @@ async function step<T>(fn: () => Promise<T>): Promise<T | { error: ReturnType<ty
   }
 }
 
-const yt = await createInnertube(ytFetch, cookie, authUser);
+const yt = await createInnertube(ytFetch, cookie || "", authUser);
 const raw = async (endpoint: string, args: J) =>
   ((await yt.actions.execute(endpoint, { ...args, client: "YTMUSIC", parse: false })) as J).data;
 
@@ -246,6 +247,72 @@ switch (cmd) {
       return { queries: sg.queries, items: sg.items.map((i) => `${i.type}:${i.title}`) };
     });
     out("suggest", { query: arg, parsed: r });
+    break;
+  }
+  case "visionos": {
+    // visionos <videoId>: formats VISIONOS offers and whether each codec's stream is fully served.
+    const info = await yt.getBasicInfo(rest[0], { client: "VISIONOS" });
+    const audio = (info.streaming_data?.adaptive_formats ?? []).filter((f) => f.has_audio && !f.has_video).map((f) => `${f.itag} ${f.mime_type}`);
+    const video = (info.streaming_data?.adaptive_formats ?? []).filter((f) => f.has_video && !f.has_audio).map((f) => `${f.itag} ${f.mime_type.split(";")[0]} ${f.height}p`).slice(0, 6);
+    const rows = [];
+    for (const [codec, format] of [["opus", "webm"], ["mp4a", "mp4"]]) {
+      rows.push(await step(async () => {
+        const f = info.chooseFormat({ type: "audio", quality: "best", codec, format });
+        const url = (await f.decipher(yt.session.player))!;
+        const r = await fetch(url, { headers: { Range: "bytes=0-" } });
+        const n = (await r.arrayBuffer()).byteLength;
+        return `${codec}: itag=${f.itag} status=${r.status} got=${n} clen=${new URL(url).searchParams.get("clen")}`;
+      }));
+    }
+    out("visionos", { videoId: rest[0], audio, video, rows });
+    break;
+  }
+  case "clients": {
+    // clients <videoId>: for every InnerTube client, the best audio format and whether googlevideo serves the whole
+    // file to a media-element style request (open range, and a range past the first MB). Run with YTM_ANON=1 to see
+    // what an account without Premium gets.
+    const names = ["YTMUSIC", "WEB", "MWEB", "ANDROID_VR", "VISIONOS", "YTMUSIC_ANDROID", "TV", "TV_SIMPLY", "TV_EMBEDDED", "WEB_EMBEDDED", "WEB_CREATOR", "IOS", "ANDROID"] as const;
+    const head = async (url: string, range: string) => {
+      const r = await fetch(url, { headers: { Range: `bytes=${range}` } }).catch(() => null);
+      await r?.body?.cancel();
+      return r ? r.status : "x";
+    };
+    const rows: string[] = [];
+    for (const client of names) {
+      const t0 = Date.now();
+      try {
+        const info = await yt.getBasicInfo(rest[0], { client });
+        const ps = info.playability_status?.status;
+        let f;
+        try { f = info.chooseFormat({ type: "audio", quality: "best", codec: "opus", format: "webm" }); }
+        catch { f = info.chooseFormat({ type: "audio", quality: "best", format: "any" }); }
+        const url = await f.decipher(yt.session.player);
+        const clen = Number(new URL(url).searchParams.get("clen") ?? 0);
+        rows.push(`${client}: ${ps} itag=${f.itag} ${f.mime_type.split(";")[0]} ${Date.now() - t0}ms open=${await head(url, "0-")} mid=${await head(url, `${Math.floor(clen * 0.8)}-${Math.floor(clen * 0.8) + 1023}`)}`);
+      } catch (e) {
+        rows.push(`${client}: error ${(e as Error).message.slice(0, 90)}`);
+      }
+    }
+    out("clients", { videoId: rest[0], anon: !!process.env.YTM_ANON, rows });
+    break;
+  }
+  case "fetchfull": {
+    // fetchfull <videoId> <opus|mp4a>: downloads the stream like a media element would (Range: bytes=0-), saves it
+    // to debug/stream.<ext> and reports status, headers and size against clen.
+    const codec = rest[1] ?? "opus";
+    const info = await yt.getBasicInfo(rest[0], { client: "YTMUSIC" });
+    const f = info.chooseFormat({ type: "audio", quality: "best", codec, format: codec === "opus" ? "webm" : "mp4" });
+    const url = (await f.decipher(yt.session.player))!;
+    const q = new URL(url).searchParams;
+    writeFileSync("debug/stream.url", url); // local debug file only (gitignored debug/)
+    const r = await fetch(url, { headers: { Range: "bytes=0-" } });
+    const buf = Buffer.from(await r.arrayBuffer());
+    const ext = codec === "opus" ? "webm" : "m4a";
+    writeFileSync(`debug/stream.${ext}`, buf);
+    out("fetchfull", {
+      itag: f.itag, status: r.status, ct: r.headers.get("content-type"), cr: r.headers.get("content-range"), len: r.headers.get("content-length"),
+      got: buf.length, clen: q.get("clen"), dur: q.get("dur"), length: info.basic_info.duration, title: info.basic_info.title, params: [...q.keys()].join(","), c: q.get("c"), file: `debug/stream.${ext}`,
+    });
     break;
   }
   case "codecs": {
