@@ -103,6 +103,8 @@ pub async fn auth_login(app: AppHandle) -> Result<String, String> {
         .title("Sign in to YouTube Music")
         .inner_size(520.0, 720.0)
         .user_agent(CHROME_UA)
+        // No browser context menu (Back, Reload, Inspect…) on Google's pages either.
+        .initialization_script("window.addEventListener('contextmenu', (e) => e.preventDefault(), true);")
         .build()
         .map_err(|e| e.to_string())?;
 

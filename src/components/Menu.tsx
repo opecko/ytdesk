@@ -13,6 +13,29 @@ export interface MenuEntry {
 
 const W = 240;
 
+/** Where a right-click asked the next ⋮ menu to open (consumed by that menu's first layout). */
+let pointerAnchor: { x: number; y: number } | null = null;
+
+/**
+ * Right-click support: the innermost ancestor of `target` that holds exactly one ⋮ menu button opens that menu at
+ * (x, y). Containers with several menus (lists, grids) only match through a row inside them.
+ */
+export function openMenuAt(target: EventTarget | null, x: number, y: number) {
+  for (let el = target instanceof Element ? target : null; el && el !== document.body; el = el.parentElement) {
+    if (el.closest('[role="menu"]')) return;
+    // Page-level containers never count, or a page with a single row would open it from anywhere.
+    if (el.matches("main, nav, header, footer, [role=dialog], [role=tabpanel]")) return;
+    const buttons = el.querySelectorAll<HTMLButtonElement>("button[data-more-menu]");
+    if (buttons.length > 1) return;
+    if (buttons.length === 1) {
+      if (buttons[0].disabled || buttons[0].getAttribute("aria-expanded") === "true") return;
+      pointerAnchor = { x, y };
+      buttons[0].click();
+      return;
+    }
+  }
+}
+
 /** ⋮ button with a portal popover (never clipped by scroll containers); closes on outside click, Esc, scroll. */
 export default function Menu({ entries, label = "More actions", className = "", onOpen, trigger }: {
   /** Re-evaluated on every render while open, so entries that load asynchronously appear in place. */
@@ -32,6 +55,13 @@ export default function Menu({ entries, label = "More actions", className = "", 
 
   useLayoutEffect(() => {
     if (!open || !btn.current) return;
+    const at = pointerAnchor;
+    pointerAnchor = null;
+    if (at) {
+      const up = at.y + 320 > window.innerHeight;
+      setPos({ left: Math.max(8, Math.min(at.x, window.innerWidth - W - 8)), top: at.y, up });
+      return;
+    }
     const r = btn.current.getBoundingClientRect();
     const up = r.bottom + 320 > window.innerHeight;
     setPos({ left: Math.max(8, Math.min(r.right - W, window.innerWidth - W - 8)), top: up ? r.top - 4 : r.bottom + 4, up });
@@ -64,6 +94,7 @@ export default function Menu({ entries, label = "More actions", className = "", 
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
+        data-more-menu={trigger ? undefined : ""}
         onClick={(e) => {
           e.stopPropagation();
           setStack([]);
