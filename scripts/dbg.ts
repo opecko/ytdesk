@@ -248,6 +248,22 @@ switch (cmd) {
     out("suggest", { query: arg, parsed: r });
     break;
   }
+  case "codecs": {
+    // codecs <videoId>: what the app's YTMUSIC path picks per codec, and whether googlevideo serves it.
+    const { probe } = await import("./dbgStream");
+    const info = await yt.getBasicInfo(arg, { client: "YTMUSIC" });
+    const rows = [];
+    for (const codec of ["opus", "mp4a"]) {
+      rows.push(await step(async () => {
+        const f = info.chooseFormat({ type: "audio", quality: "best", codec, format: codec === "opus" ? "webm" : "mp4" });
+        const url = await f.decipher(yt.session.player);
+        return { codec, itag: f.itag, mime: f.mime_type, bitrate: f.bitrate, drc: (f as J).is_drc, xtags: (f as J).xtags, probe: url ? await probe(url) : "no url" };
+      }));
+    }
+    const audio = (info.streaming_data?.adaptive_formats ?? []).filter((f) => f.has_audio && !f.has_video).map((f) => `${f.itag} ${f.mime_type} drc=${(f as J).is_drc ?? "-"}`);
+    out("codecs", { videoId: arg, audio, rows });
+    break;
+  }
   case "stream": {
     const { dbgStream } = await import("./dbgStream");
     out("stream", await dbgStream(yt, arg, cookie));

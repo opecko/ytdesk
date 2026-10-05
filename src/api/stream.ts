@@ -37,6 +37,10 @@ type ClientName = NonNullable<NonNullable<Parameters<Awaited<ReturnType<typeof g
 const CLIENTS: ClientName[] = ["YTMUSIC"];
 const MIME: Record<Codec, string> = { opus: 'audio/webm; codecs="opus"', aac: 'audio/mp4; codecs="mp4a.40.2"' };
 const FORMAT_CODEC: Record<Codec, string> = { opus: "opus", aac: "mp4a" };
+const CONTAINER: Record<Codec, string> = { opus: "webm", aac: "mp4" };
+// WebView2 (Windows) rejects YouTube's AAC/MP4 audio ("Format error", playback-log 2026-10-05) but plays Opus/WebM;
+// WebKitGTK (Linux) has always played the AAC stream through GStreamer, so it keeps AAC first.
+const LINUX = /Linux/.test(navigator.userAgent);
 const PREFETCH_TTL_MS = 20 * 60 * 1000;
 
 export function supportedCodecs(canPlay: (mime: string) => string = (m) => new Audio().canPlayType(m)): Codec[] {
@@ -51,7 +55,8 @@ async function viaInnertube(videoId: string, codecs: Codec[]): Promise<Stream> {
       const info = await yt.getBasicInfo(videoId, { client });
       for (const codec of codecs) {
         try {
-          const format = info.chooseFormat({ type: "audio", quality: "best", codec: FORMAT_CODEC[codec] });
+          // chooseFormat filters on container too and defaults to mp4, so Opus needs format "webm".
+          const format = info.chooseFormat({ type: "audio", quality: "best", codec: FORMAT_CODEC[codec], format: CONTAINER[codec] });
           const url = await format.decipher(yt.session.player);
           if (url) return { url, source: "innertube", codec };
         } catch (e) {
@@ -73,13 +78,14 @@ async function viaYtdlp(videoId: string, codecs: Codec[]): Promise<Stream> {
 // InnerTube (YTMUSIC, ~0.3 s) first, yt-dlp (~8 s, solves challenges via node/deno) as the fallback.
 // `alternate` flips the order for retries after a MediaError.
 async function resolve(videoId: string, alternate: boolean): Promise<Stream> {
-  const codecs = supportedCodecs();
-  if (!codecs.length) throw new UnsupportedCodecError();
+  const supported = supportedCodecs();
+  if (!supported.length) throw new UnsupportedCodecError();
+  const codecs = LINUX ? [...supported].sort((a, b) => (a === "aac" ? -1 : b === "aac" ? 1 : 0)) : supported;
   const order = alternate ? [viaYtdlp, viaInnertube] : [viaInnertube, viaYtdlp];
   const errors: string[] = [];
   for (const attempt of order) {
     try {
-      return await attempt(videoId, codecs);
+      return await attempt(videoId, attempt === viaYtdlp ? supported : codecs); // yt-dlp keeps its old order
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       errors.push(msg);

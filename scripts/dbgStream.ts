@@ -9,7 +9,7 @@ type InnerTubeClient = NonNullable<NonNullable<Parameters<Innertube["getBasicInf
 
 const CLIENTS: InnerTubeClient[] = ["ANDROID", "TV", "IOS", "YTMUSIC", "WEB_EMBEDDED"];
 
-async function probe(url: string): Promise<string> {
+export async function probe(url: string): Promise<string> {
   const one = async (range: string) => {
     try {
       const r = await fetch(url, { headers: { Range: `bytes=${range}` } });
