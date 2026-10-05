@@ -9,11 +9,20 @@ export interface Stream {
   codec: Codec;
   /** Served through the local Rust proxy (see src-tauri/src/proxy.rs). */
   proxied?: boolean;
+  /** Original googlevideo URL and format, for diagnostics after a MediaError. */
+  origin?: string;
+  itag?: number;
 }
 
 /** Appends a line to debug/playback.log via Rust; never throws. */
 export function logPlayback(line: string) {
   invoke("log_playback", { line }).catch(() => {});
+}
+
+/** What googlevideo returns for the stream's URL (status, type, first bytes); never throws. */
+export function probeStream(stream: Stream): Promise<string> {
+  if (!stream.origin) return Promise.resolve("no url");
+  return invoke<string>("stream_probe", { url: stream.origin }).catch((e) => `probe failed: ${e}`);
 }
 
 export async function viaProxy(stream: Stream): Promise<Stream> {
@@ -58,7 +67,7 @@ async function viaInnertube(videoId: string, codecs: Codec[]): Promise<Stream> {
           // chooseFormat filters on container too and defaults to mp4, so Opus needs format "webm".
           const format = info.chooseFormat({ type: "audio", quality: "best", codec: FORMAT_CODEC[codec], format: CONTAINER[codec] });
           const url = await format.decipher(yt.session.player);
-          if (url) return { url, source: "innertube", codec };
+          if (url) return { url, source: "innertube", codec, origin: url, itag: format.itag };
         } catch (e) {
           errors.push(`${client}/${codec}: ${e}`);
         }
@@ -72,7 +81,7 @@ async function viaInnertube(videoId: string, codecs: Codec[]): Promise<Stream> {
 
 async function viaYtdlp(videoId: string, codecs: Codec[]): Promise<Stream> {
   const url = await invoke<string>("ytdlp_stream_url", { videoId, codecs });
-  return { url, source: "yt-dlp", codec: codecs[0] };
+  return { url, source: "yt-dlp", codec: codecs[0], origin: url };
 }
 
 // InnerTube (YTMUSIC, ~0.3 s) first, yt-dlp (~8 s, solves challenges via node/deno) as the fallback.

@@ -147,3 +147,31 @@ mod tests {
         assert_eq!(h.get("range").map(String::as_str), Some("bytes=10-"));
     }
 }
+
+/// Diagnostics for a stream URL the <audio> element rejected: what googlevideo answers to a small Range request
+/// ("206 audio/webm len=1024", or the status plus the start of an error body). googlevideo URLs only.
+#[tauri::command]
+pub async fn stream_probe(url: String) -> Result<String, String> {
+    if !allowed(&url) {
+        return Err("not a googlevideo URL".into());
+    }
+    let res = reqwest::Client::builder()
+        .user_agent(UA)
+        .build()
+        .map_err(|e| e.to_string())?
+        .get(&url)
+        .header("Range", "bytes=0-1023")
+        .send()
+        .await
+        .map_err(|e| format!("request failed: {e}"))?;
+    let status = res.status().as_u16();
+    let ct = res.headers().get("content-type").and_then(|v| v.to_str().ok()).unwrap_or("-").to_owned();
+    let len = res.headers().get("content-length").and_then(|v| v.to_str().ok()).unwrap_or("-").to_owned();
+    let body = res.bytes().await.map_err(|e| e.to_string())?;
+    let head: String = if ct.starts_with("audio/") || ct.starts_with("video/") {
+        body.iter().take(8).map(|b| format!("{b:02x}")).collect()
+    } else {
+        String::from_utf8_lossy(&body[..body.len().min(160)]).replace(['\n', '\r'], " ")
+    };
+    Ok(format!("{status} {ct} len={len} head={head}"))
+}

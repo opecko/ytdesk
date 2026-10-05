@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { maxresUrl, mediaArtwork } from "../api/art";
 import type { NextResult } from "../api/queue";
-import { getStreamUrl, logPlayback, prefetchStream, UnsupportedCodecError, viaProxy, type Stream } from "../api/stream";
+import { getStreamUrl, logPlayback, prefetchStream, probeStream, UnsupportedCodecError, viaProxy, type Stream } from "../api/stream";
 import type { QueueChip, Rating, Track } from "../api/types";
 import type { RadioSource } from "../api/queue";
 import { getChipTracks, getWatch, rate, startRadio } from "../api/ytm";
@@ -378,7 +378,10 @@ export const usePlayer = create<PlayerState>((set, get) => {
     const { index } = get();
     const resumeAt = audio.currentTime;
     const track = get().queue[index];
-    logPlayback(`${track?.id ?? "?"} MediaError code=${code} msg=${err?.message ?? ""} source=${current?.source} proxied=${!!current?.proxied} retry=${retries}`);
+    const failed = current;
+    logPlayback(`${track?.id ?? "?"} MediaError code=${code} msg=${err?.message ?? ""} source=${failed?.source} codec=${failed?.codec} itag=${failed?.itag ?? "-"} proxied=${!!failed?.proxied} retry=${retries}`);
+    // First failure of a stream: record what the server actually sends for it.
+    if (failed && !failed.proxied) void probeStream(failed).then((p) => logPlayback(`${track?.id ?? "?"} probe ${failed.source}: ${p}`));
     const recoverable = code === MEDIA_ERR_SRC_NOT_SUPPORTED || code === MEDIA_ERR_NETWORK;
     if (recoverable && retries === 0 && current && !current.proxied) {
       retries++;

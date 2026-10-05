@@ -64,6 +64,7 @@ pub fn run() {
             tray::tray_update,
             render::render_set_gpu,
             proxy::proxy_url,
+            proxy::stream_probe,
             ytdlp::ytdlp_status,
             ytdlp::ytdlp_install,
             ytdlp::ytdlp_update,
