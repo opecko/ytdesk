@@ -136,7 +136,12 @@ function VolumeControl() {
   const { setVolume, toggleMute } = usePlayer.getState();
   const Icon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
   return (
-    <div className="flex items-center gap-1">
+    // Mouse wheel over the icon or slider: ±5 %, snapped to whole steps.
+    <div className="flex items-center gap-1" onWheel={(e) => {
+      if (!e.deltaY) return;
+      const base = muted ? 0 : volume;
+      setVolume(Math.min(1, Math.max(0, Math.round((base + (e.deltaY < 0 ? 0.05 : -0.05)) * 20) / 20)));
+    }}>
       <button className="icon-btn h-10 w-10" onClick={toggleMute} aria-label={muted ? "Unmute" : "Mute"} aria-pressed={muted}>
         <Icon size={20} />
       </button>
