@@ -48,7 +48,6 @@ macOS isn't supported yet.
   **Settings**.
 - **Settings** also let you switch off Discord status or listening history, and turn off GPU rendering if you're
   gaming at the same time.
-- Right-click is disabled on purpose. Use the **⋮** button on any track for actions.
 
 ## Troubleshooting
 
